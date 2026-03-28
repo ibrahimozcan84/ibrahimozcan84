@@ -4,9 +4,9 @@ import numpy as np
 from scipy.optimize import differential_evolution
 
 # Sayfa Yapılandırması
-st.set_page_config(page_title="Beton Reçete Optimize Edici", layout="centered")
-st.title("🏗️ Beton Karışım Tasarımı Sistemi")
-st.write("Hedeflediğiniz dayanımı girin, yapay zeka en ideal reçeteyi hesaplasın.")
+st.set_page_config(page_title="Concrete Recipe Optimizer (Beton Reçete Optimize Edici)", layout="centered")
+st.title("🏗️ Concrete Mix Design System (Beton Karışım Tasarımı Sistemi)")
+st.write("Enter your target strength, and let the AI ​​calculate the ideal formula. (Hedeflediğiniz dayanımı girin, yapay zeka en ideal reçeteyi hesaplasın.)")
 
 
 # 1. Modeli Yükle
@@ -19,12 +19,12 @@ model = load_model()
 
 # 2. Kullanıcı Giriş Paneli (Sidebar)
 with st.sidebar:
-    st.header("Hedef Parametreler")
-    target_s = st.number_input("Hedef Dayanım (MPa)", min_value=10.0, max_value=85.0, value=40.0)
-    target_a = st.number_input("Kür Yaşı (Gün)", min_value=1, max_value=120, value=28)
+    st.header("Target Parameters(Hedef Parametreler)")
+    target_s = st.number_input("Target Strength(Hedef Dayanım) (MPa)", min_value=10.0, max_value=85.0, value=40.0)
+    target_a = st.number_input("Cure Age (Day) Kür Yaşı (Gün)", min_value=1, max_value=120, value=28)
     st.divider()
-    st.write("Optimizasyon hassasiyetini belirler.")
-    run_btn = st.button("Reçete Üret", type="primary")
+    st.write("Optimization determines the sensitivity. (Optimizasyon hassasiyetini belirler.)")
+    run_btn = st.button("Generate a Prescription(Reçete Üret)", type="primary")
 
 
 # 3. Optimizasyon Fonksiyonu
@@ -37,7 +37,7 @@ def optimize_mix(trial_mix):
 
 # 4. Ana Ekran ve Sonuçlar
 if run_btn:
-    with st.spinner("Yapay zeka binlerce kombinasyonu deniyor..."):
+    with st.spinner("Artificial intelligence tries thousands of combinations...(Yapay zeka binlerce kombinasyonu deniyor...)"):
         bounds = [(100, 500), (0, 350), (0, 200), (120, 230), (0, 30), (700, 1100), (600, 950), (target_a, target_a)]
         result = differential_evolution(optimize_mix, bounds, tol=0.01)
 
@@ -46,17 +46,17 @@ if run_btn:
         final_pred = model.predict(np.append(optimized_params, wc_final).reshape(1, -1))[0]
 
     # Görsel Sonuç Paneli
-    st.success(f"Hesaplama Tamamlandı! Tahmini Dayanım: {final_pred:.2f} MPa")
+    st.success(f"Calculation Complete! Estimated Strength:(Hesaplama Tamamlandı! Tahmini Dayanım:) {final_pred:.2f} MPa")
 
     col1, col2 = st.columns(2)
-    features = ["Çimento", "Cüruf", "Uçucu Kül", "Su", "Süperakışkanlaştırıcı", "Kaba Agrega", "İnce Agrega"]
+    features = ["Cement(Çimento)", "Slag(Cüruf)", "Fly Ash(Uçucu Kül)", "Water(Su)", "Superplasticizer(Süperakışkanlaştırıcı)", "Coarse Aggregate(Kaba Agrega)", "Fine Aggregate(İnce Agrega)"]
 
     with col1:
-        st.metric("Hedef Sapması", f"{abs(final_pred - target_s):.4f} MPa")
+        st.metric("Target Deviation(Hedef Sapması)", f"{abs(final_pred - target_s):.4f} MPa")
         for i in range(4):
             st.write(f"**{features[i]}:** {optimized_params[i]:.2f} kg/m³")
 
     with col2:
-        st.metric("Su/Çimento Oranı", f"{wc_final:.3f}")
+        st.metric("Water/Cement Ratio(Su/Çimento Oranı)", f"{wc_final:.3f}")
         for i in range(4, 7):
             st.write(f"**{features[i]}:** {optimized_params[i]:.2f} kg/m³")
